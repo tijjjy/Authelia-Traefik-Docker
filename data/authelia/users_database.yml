@@ -1,0 +1,14 @@
+---
+###############################################################
+#                         Users Database                      #
+###############################################################
+
+users:
+  authelia-demo:
+    disabled: false
+    displayname: "Demo User"
+    password: "$pbkdf2-sha512$310000$Y33moBC/ZuuD7OQgNpmPOg$7M0paGkHq9SUuLdKx/UIdGdNa5Qr4XTEmZirzcuLT5rkCc.Qu0swY7YUGEvzBgfPpjlnnvJLhbIqLn.0HVoFUg"  # Password is 'Authelia-Sample-Password!'
+    email: user@example.com
+    groups:
+      - admins
+...

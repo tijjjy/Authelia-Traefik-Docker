@@ -1,0 +1,119 @@
+###############################################################################
+#                           Authelia Configuration                            #
+###############################################################################
+
+theme: dark
+
+jwt_secret: this_is_an_example_jwt_secret
+
+default_redirection_url: https://auth.example.com
+
+default_2fa_method: "totp"
+
+##
+## Server Configuration
+##
+server:
+  host: 0.0.0.0
+  port: 9091
+  path: ""
+  enable_pprof: false
+  enable_expvars: false
+  disable_healthcheck: false
+##
+## Log Configuration
+##
+log:
+  level: debug
+##
+## TOTP Configuration
+##
+totp:
+  issuer: authelia.com
+##
+## WebAuthn Configuration
+##
+webauthn:
+  disable: false
+  timeout: 60s
+  display_name: Authelia
+  attestation_conveyance_preference: indirect
+  user_verification: preferred
+##
+## NTP Configuration
+##
+ntp:
+  address: "time.cloudflare.com:123"
+  version: 4
+  max_desync: 3s
+  disable_startup_check: false
+  disable_failure: false
+
+##
+## Authentication Backend Provider Configuration
+##
+authentication_backend:
+  ##
+  ## File (Authentication Provider)
+  ##
+  file:
+    path: /config/users_database.yml
+    watch: true
+    search:
+      email: false
+      case_insensitive: false
+    password:
+      algorithm: pbkdf2
+      pbkdf2:
+        variant: sha512
+        iterations: 310000
+        salt_length: 16
+access_control:
+  default_policy: deny
+  rules:
+    - domain: web.example.com
+      policy: two_factor
+
+##
+## Session Provider Configuration
+##
+session:
+  secret: 'example_session_secret'
+  domain: example.com
+  expiration: 8h
+  inactivity: 4h
+  ##
+  ## Redis Provider
+  ##
+  redis:
+    host: redis
+    port: 6379
+    database_index: 0
+    maximum_active_connections: 20
+    minimum_idle_connections: 0
+
+##
+## Regulation Configuration
+##
+regulation:
+  max_retries: 3
+  find_time: 2m
+  ban_time: 30m
+
+##
+## Storage Provider Configuration
+##
+storage:
+  local:
+    path: /config/db.sqlite3
+
+##
+## Notification Provider
+##
+notifier:
+  disable_startup_check: true
+  ##
+  ## File System (Notification Provider)
+  ##
+  filesystem:
+    filename: /config/notification.txt

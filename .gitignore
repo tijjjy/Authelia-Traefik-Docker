@@ -1,0 +1,5 @@
+data/redis/dump.rdb
+data/authelia/db.sqlite3
+data/traefik/acme.json
+data/traefik/traefik.log
+data/traefik/traefikaccess

@@ -1,0 +1,94 @@
+[entryPoints]
+  [entryPoints.http]
+    address = ":80"
+    [entryPoints.http.http]
+      [entryPoints.http.http.redirections]
+        [entryPoints.http.http.redirections.entryPoint]
+          to = "https"
+          scheme = "https"
+    [entryPoints.http.proxyProtocol]
+      trustedIPs = ["127.0.0.1/32", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+      insecure = false
+    [entryPoints.http.forwardedHeaders]
+      trustedIPs = ["127.0.0.1/32", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+      insecure = false
+  [entryPoints.https]
+    address = ":443"
+    [entryPoints.https.proxyProtocol]
+      trustedIPs = ["127.0.0.1/32", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+      insecure = false
+    [entryPoints.https.forwardedHeaders]
+      trustedIPs = ["127.0.0.1/32", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+      insecure = false
+
+[tls.options]
+  [tls.options.modern]
+    minVersion = "VersionTLS13"
+  [tls.options.intermediate]
+    minVersion = "VersionTLS12"
+    cipherSuites = [
+      "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
+      "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+    ]
+
+[log]
+  filePath = "/etc/traefik/traefik.log"
+  format = "json"
+
+[accessLog]
+  filePath = "/etc/traefik/traefikaccess"
+  format = "json"
+
+#SERVICES START
+[http.services]
+
+#AUTHELIA
+    [http.services.authelia]
+      [http.services.authelia.loadBalancer]
+        [[http.services.authelia.loadBalancer.servers]]
+          url = "http://authelia:9091/"
+
+#TRANSPORTS
+[http.serversTransports.generic-skipverifytls]
+  insecureSkipVerify = true
+
+#ROUTERS START
+[http.routers]
+
+#AUTHELIA ROUTER
+    [http.routers.authelia]
+      entryPoints = ["https"]
+      rule = "Host(`auth.example.com`)"
+      service = "authelia"
+      [http.routers.authelia.tls]
+        certResolver = "letsencrypt"
+
+#MIDDLEWARES
+  [http.middlewares]
+    [http.middlewares.authelia.forwardAuth]
+      address = "http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.example.com%2F"
+      trustForwardHeader = true
+      authResponseHeaders = [
+          "Remote-User",
+          "Remote-Groups",
+          "Remote-Email",
+          "Remote-Name"
+      ]
+
+#PROVIDERS
+[providers.docker]
+  endpoint = "unix:///var/run/docker.sock"
+
+[providers.file]
+  filename = "/etc/traefik/traefik.toml"
+  watch = true
+
+#letsencrypt
+[certificatesResolvers.letsencrypt.acme]
+  email = "example@example.com"
+  storage = "/etc/traefik/acme.json"
+  [certificatesResolvers.letsencrypt.acme.tlsChallenge]
